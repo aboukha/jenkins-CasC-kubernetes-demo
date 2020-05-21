@@ -13,7 +13,7 @@
 - [Setting up External Dns (included in deploy.sh)](#setting-up-external-dns-included-in-deploysh)
 - [Deployment with deploy.sh](#deployment-with-deploysh)
 - [Uninstall with uninstall.sh](#uninstall-with-uninstallsh)
-- [Helm Commands Of Interest](#helm-commands-of-interest)
+- [Helm Commands of Interest](#helm-commands-of-interest)
 - [Troubleshooting](#troubleshooting)
 - [References](#references)
   - [Jenkins Configuration as Code](#jenkins-configuration-as-code)
@@ -283,14 +283,14 @@ kubectl logs -f jenkins-656b5fccc7-pv6f8 | egrep -i '(error|failure|exception|vo
 - [Maven Wrapper](https://github.com/takari/maven-wrapper) The easiest way to integrate Maven into your project!
 - [Maven Plugins](http://maven.apache.org/plugins/)
 - [simple-java-maven-app](https://github.com/jenkins-docs/simple-java-maven-app) For an introductory tutorial on how to use Jenkins to build a simple Java application with Maven.
-    - [Build a Java app with Maven 🌟](https://jenkins.io/doc/tutorials/build-a-java-app-with-maven/) ***
+    - [Build a Java app with Maven 🌟🌟](https://jenkins.io/doc/tutorials/build-a-java-app-with-maven/) 
     - [Youtube: CloudBees - Declarative Pipelines with Jenkins](https://www.youtube.com/watch?v=79HfmjeOTEI) 
 
 ### Petclinic
 - [spring-petclinic.github.io](https://spring-petclinic.github.io/)
 - [A Dockerfile for Maven-based Github projects 🌟](https://blog.frankel.ch/dockerfile-maven-based-github-projects/) 
 - [Building Spring Docker Images 🌟](https://tech.paulcz.net/blog/building-spring-docker-images/) 
-- [A Dockerfile for Maven-Based GitHub Projects 🌟🌟🌟](https://dzone.com/articles/a-dockerfile-for-maven-based-github-projects)  
+- [A Dockerfile for Maven-Based GitHub Projects 🌟🌟](https://dzone.com/articles/a-dockerfile-for-maven-based-github-projects)  
 - [Jenkins CI reference pipeline for Java Spring Boot projects with Maven lifecycle and Docker packaging](https://deors.wordpress.com/2019/04/25/jenkins-ci-pipeline-java-spring-boot-maven-docker/)
     - [github.com/deors/deors-demos-petclinic 🌟](https://github.com/deors/deors-demos-petclinic) 
 
