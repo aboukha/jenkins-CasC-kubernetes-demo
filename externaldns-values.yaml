@@ -1,0 +1,13 @@
+rbac:
+  create: true
+
+provider: digitalocean
+
+digitalocean:
+  apiToken: <my_digitalocean_api_token>
+
+interval: "1m"
+
+policy: sync # or upsert-only
+
+domainFilters: [ '<my_public_dns_domain.com>' ]

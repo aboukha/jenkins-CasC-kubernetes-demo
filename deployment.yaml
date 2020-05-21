@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-petclinic-deployment
+  labels:
+    app: spring-petclinic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-petclinic
+  template:
+    metadata:
+      labels:
+        app: spring-petclinic
+    spec:
+      imagePullSecrets:
+      - name: $KUBERNETES_SECRET_NAME 
+      containers:
+      - name: spring-petclinic
+        image: <my_dockerhub_username>/spring-petclinic:latest
+        ports:
+        - containerPort: 8080
+        env:
+          - name: PETCLINIC_DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: jenkins-petclinic-ddbb-host
+                key: host
+          - name: PETCLINIC_DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: jenkins-petclinic-ddbb
+                key: username
+          - name: PETCLINIC_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: jenkins-petclinic-ddbb
+                key: password

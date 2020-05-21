@@ -1,0 +1,486 @@
+nameOverride: ""
+fullnameOverride: ""
+image:
+  repository: jenkins/jenkins
+  tag: 2.222.3-alpine
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+# - my-pull-secret
+## Additional init containers, e. g. for providing custom themes
+extraInitContainers: |
+# Annotations for the Jenkins pod
+podAnnotations: {}
+# JVM options
+javaOpts: >-
+  -Dhudson.slaves.NodeProvisioner.initialDelay=0
+  -Dhudson.model.LoadStatistics.decay=0.7
+  -Dhudson.slaves.NodeProvisioner.MARGIN=30
+  -Dhudson.slaves.NodeProvisioner.MARGIN0=0.6
+  -XX:+UnlockExperimentalVMOptions
+  -XX:+UseCGroupMemoryLimitForHeap
+  -XX:MaxRAMFraction=2
+  -XshowSettings:vm
+# Additional environment variables
+extraEnv: |
+livenessProbe:
+  httpGet:
+    path: /login
+    port: http
+  initialDelaySeconds: 90
+
+readinessProbe:
+  httpGet:
+    path: /login
+    port: http
+  initialDelaySeconds: 15
+
+#resources: {}
+resources: 
+  requests:
+    cpu: 1
+    memory: 1Gi
+  limits:
+    #cpu: 1
+    #memory: 1Gi
+    cpu: 2
+    memory: 2Gi
+
+affinity: {}
+nodeSelector: {}
+tolerations: []
+terminationGracePeriodSeconds: 30
+securityContext:
+  runAsUser: 1000
+  fsGroup: 1000
+  runAsNonRoot: true
+serviceAccount:
+  master:
+    # Specifies whether a ServiceAccount should be created
+    create: true
+    # The name of the ServiceAccount to use.
+    # If not set and create is true, a name is generated using the fullname template
+    #name: ""
+    #name: master
+  k8s-agent:
+  #   # Specifies whether a ServiceAccount should be created
+    create: true
+  #   # The name of the ServiceAccount to use.
+  #   # If not set and create is true, a name is generated using the fullname template
+    #name: ""
+    name: k8s-agent
+  # agent-bar:
+  #   # Specifies whether a ServiceAccount should be created
+  #   create: true
+  #   # The name of the ServiceAccount to use.
+  #   # If not set and create is true, a name is generated using the fullname template
+  #   name: "bar-account"
+## Add additional volumes and mounts
+extraVolumes: |
+extraVolumeMounts: |
+# rbac:
+#   master:
+#     # Specifies whether RBAC resources should be created
+#     create: false
+#     rules: []
+rbac:
+  master:
+    create: true
+    rules:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+      - apiGroups: [""]
+        resources: ["pods/exec"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+      - apiGroups: [""]
+        resources: ["pods/log"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: [""]
+        resources: ["persistentvolumeclaims"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  k8s-agent:
+    create: true
+    rules:
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+      - apiGroups: [""]
+        resources: ["pods/exec"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+      - apiGroups: [""]
+        resources: ["pods/log"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: [""]
+        resources: ["persistentvolumeclaims"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+  # agent-foo:
+  #   create: true
+  #   rules: []
+  # agent-bar:
+  #   create: true
+  #   rules:
+  #     - apiGroups:
+  #         - ""
+  #       resources:
+  #         - nodes
+  #       verbs:
+  #         - get
+  #     - apiGroups:
+  #         - ""
+  #       resources:
+  #         - services
+  #       verbs:
+  #         - get
+  #         - list
+  #         - update
+  #         - watch
+service:
+  master:
+    #type: ClusterIP
+    type: LoadBalancer
+    clusterIP: ""
+    externalIPs: []
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    externalTrafficPolicy: ""
+    annotations: {}
+    port: 8080
+    nodePort:
+  agent:
+    clusterIP: ""
+    annotations: {}
+    port: 50000
+persistence:
+  enabled: false
+  ## If defined, storageClassName: <storageClass>.
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning.
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ## set, choosing the default provisioner (gp2 on AWS, standard on GKE, AWS, and OpenStack).
+  #storageClass: ""
+  storageClass: "do-block-storage"
+  #VolumeBindingMode: WaitForFirstConsumer
+  #size: 10Gi
+  size: 1Gi
+  #existingClaim: "jenkins"
+  annotations: {}
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  paths: [/]
+  backend:
+    serviceName: jenkins-master
+    servicePort: 8080   
+  hosts:
+    - jenkins.<my_public_dns_domain.com>
+  tls: []
+    # - secretName: jenkins-tls
+    #   hosts:
+    #     - jenkins.<my_public_dns_domain.com>
+# casc:
+#   existingSecret: ""
+#   secrets: {}
+casc:
+  secrets:
+    ADMIN_USER: <my_jenkins_admin_username>
+    ADMIN_PASSWORD: <my_jenkins_admin_password>
+#k8sCredentials: []
+k8sCredentials:
+  - nameSuffix: test
+    type: usernamePassword
+    description: Some username
+    data:
+      username: foo
+      password: secret
+  - nameSuffix: text
+    type: secretText
+    description: Some username
+    data:
+      text: |
+        ds sdfsd dsfds fsdfdsfs dsf dsf
+        sdf fdsf dsf fdsfsfsdf sf sd
+        sdf fsf dsfsf sdfs fsdf f
+  - nameSuffix: dockerhub
+    type: usernamePassword
+    description: dockerhub credentials
+    data:
+      username: <my_dockerhub_username>
+      password: <my_dockerhub_password>
+  - nameSuffix: petclinic-ddbb
+    type: usernamePassword
+    description: petclinic ddbb username
+    data: 
+      username: user
+      password: password
+  - nameSuffix: petclinic-ddbb-host
+    type: secretText
+    description: petclinic ddbb host
+    data: 
+      host: localhost
+
+referenceContent:
+  - data:
+      - fileName: plugins.txt
+        fileContent: |
+          configuration-as-code
+          configuration-as-code-support
+          workflow-aggregator
+          kubernetes
+          kubernetes-credentials-provider
+          kubernetes-credentials
+          kubernetes-cli
+          kubernetes-cd
+          timestamper
+          locale
+          job-dsl
+          cloudbees-folder
+          kubernetes-pipeline-devops-steps
+          git
+          git-parameter
+          git-client
+          gitflow
+          github
+          github-branch-source
+          #list-git-branches-parameter
+          pipeline-model-definition
+          pipeline-stage-step
+          pipeline-maven
+          #build-pipeline-plugin:1.5.7.1
+          build-pipeline-plugin
+          junit
+          docker-plugin
+          docker-build-step
+          docker-workflow
+          docker-custom-build-environment
+          credentials-binding
+          #digitalocean-plugin
+          blueocean
+          jacoco   # capture code coverage report from JaCoCo.
+          matrix-project
+          matrix-auth
+          log-parser
+          ansicolor
+          cloudbees-jenkins-advisor  # Health Advisor by CloudBees
+          electricflow   # CloudBees Flow
+          cloudbees-disk-usage-simple
+          docker-build-publish # CloudBees Docker Build and Publish
+          code-coverage-api
+          fortify
+      - fileName: jenkins.yaml
+        fileContent: |
+          credentials:
+            system:
+              domainCredentials:
+              - credentials:
+                - basicSSHUserPrivateKey:
+                    description: "github ssh-key"
+                    id: "github_<my_github_username>"
+                    passphrase: "<my_github_password>"
+                    privateKeySource:
+                      directEntry:
+                        privateKey: |
+                          -----BEGIN RSA PRIVATE KEY-----
+                          <my_private_key> 
+                          -----END RSA PRIVATE KEY-----
+                    scope: GLOBAL
+                    username: "<my_github_username>"
+                - kubeconfig:
+                    description: "my digital ocean kubernetes"
+                    id: "digitalocean"
+                    kubeconfigSource:
+                      directEntry:
+                        content: |
+                          apiVersion: v1
+                          clusters:
+                          - cluster:
+                              certificate-authority-data: <my_k8s_certificate-authority-data>
+                              server: https://<my_k8s_server_id_in_kube_config>.k8s.ondigitalocean.com
+                            name: <my_k8s_name_in_kube_config>    
+                          contexts:
+                          - context:
+                              cluster: <my_k8s_name_in_kube_config>
+                              user: <my_k8s_name_in_kube_config>-admin
+                            name: <my_k8s_name_in_kube_config>
+                          current-context: <my_k8s_name_in_kube_config>
+                          kind: Config
+                          preferences: {}
+                          users:
+                          - name: <my_k8s_user_name_in_kube_config>-admin
+                            user:
+                              token: <my_k8s_user_token_in_kube_config>
+                    scope: GLOBAL       
+          jenkins:
+            securityRealm:
+              local:
+                users:
+                  - id: "${ADMIN_USER}"
+                    password: "${ADMIN_PASSWORD}"
+            authorizationStrategy:
+              loggedInUsersCanDoAnything:
+                allowAnonymousRead: false
+            numExecutors: 0
+            remotingSecurity:
+              enabled: true
+            crumbIssuer:
+              standard:
+                excludeClientIPFromCrumb: false
+            clouds:
+              - kubernetes:
+                  name: kubernetes
+                  serverUrl: https://kubernetes.default.svc.cluster.local
+                  namespace: {{ .Release.Namespace }}
+                  jenkinsUrl: http://{{ include "jenkins.fullname" . }}-master:{{ .Values.service.master.port }}
+                  jenkinsTunnel: {{ include "jenkins.fullname" . }}-agent:{{ .Values.service.agent.port }}
+                  templates:
+                    - name: k8s-agent
+                      idleMinutes: 30
+                      namespace: {{ .Release.Namespace }}
+                      nodeUsageMode: NORMAL
+                      serviceAccount: k8s-agent
+                      containers:
+                        - name: jnlp
+                          #image: jenkinsci/jnlp-slave:3.27-1
+                          image: jenkinsci/jnlp-slave:3.36-1
+                          ttyEnabled: true
+                      volumes:
+                      - persistentVolumeClaim:
+                          claimName: m2
+                          mountPath: /root/.m2
+                          readOnly: false
+                      # workspaceVolume:
+                      #   dynamicPVC:
+                      #     accessModes: ReadWriteOnce
+                      #     requestsSize: 1Gi
+                      #     storageClassName: do-block-storage
+          unclassified:
+            location:
+              adminAddress: "address not configured yet <nobody@nowhere>"
+              url: "https://jenkins.<my_public_dns_domain.com>"
+            timestamperConfig:
+              allPipelines: true
+              systemTimeFormat: "'<b>'yyyy-MM-dd HH:mm:ss.SSS'</b> '"
+              elapsedTimeFormat: "'<b>'HH:mm:ss.S'</b> '"
+          jobs:
+            - script: |
+                freeStyleJob('test-job') {
+                    steps {
+                        shell 'echo "Hello from a CasC-created job!"'
+                    }
+                }
+            - script: >
+                pipelineJob('pipeline kubernetes plugin') {
+                  definition {
+                    cpsScm {
+                      scriptPath 'examples/declarative_from_yaml_file/Jenkinsfile'
+                      scm {
+                        git {
+                          remote { url 'https://github.com/jenkinsci/kubernetes-plugin.git' }
+                          branch '*/master'
+                          extensions {}
+                        }
+                      }
+                    }
+                  }
+                }
+            - script: >
+                pipelineJob('pipeline selenium') {
+                  definition {
+                    cpsScm {
+                      scriptPath 'examples/selenium.groovy'
+                      scm {
+                        git {
+                          remote { url 'https://github.com/jenkinsci/kubernetes-plugin.git' }
+                          branch '*/master'
+                          extensions {}
+                        }
+                      }
+                    }
+                  }
+                }
+            - script: >
+                pipelineJob('pipeline kaniko') {
+                  description("You need to create a jenkins-docker-cfg secret with your docker config: kubectl create secret docker-registry regcred --docker-server=https://index.docker.io/v1/ --docker-username=csanchez --docker-password=mypassword --docker-email=john@doe.com") 
+                  definition {
+                    cpsScm {
+                      scriptPath 'examples/kaniko-declarative.groovy'
+                      scm {
+                        git {
+                          remote { url 'https://github.com/jenkinsci/kubernetes-plugin.git' }
+                          branch '*/master'
+                          extensions {}
+                        }
+                      }
+                    }
+                  }
+                }
+            - script: >
+                pipelineJob('pipeline petclinic') {
+                  description("petclinic & dockerfile with stages") 
+                  definition {
+                    cpsScm {
+                      scriptPath 'petclinic.Jenkinsfile'
+                      scm {
+                        git {
+                          remote { 
+                            url 'git@github.com:<my_github_username>/helm-charts-do.git' 
+                            credentials 'github_<my_github_username>'
+                            } 
+                          branch '*/master'
+                          extensions {}
+                        }
+                      }
+                    }
+                  }
+                } 
+            - script: >
+                pipelineJob('petclinic delete') {
+                  description("petclinic delete") 
+                  definition {
+                    cpsScm {
+                      scriptPath 'petclinic-delete.Jenkinsfile'
+                      scm {
+                        git {
+                          remote { 
+                            url 'git@github.com:<my_github_username>/helm-charts-do.git' 
+                            credentials 'github_<my_github_username>'
+                            } 
+                          branch '*/master'
+                          extensions {}
+                        }
+                      }
+                    }
+                  }
+                }                       
+forcePluginUpdates: false
+test:
+  enabled: false
+  image:
+    repository: unguiculus/docker-python3-phantomjs-selenium
+    tag: v1
+    pullPolicy: IfNotPresent
+  resources: {}
+  #  requests:
+  #    cpu: 200m
+  #    memory: 512Mi
+  #  limits:
+  #    cpu: 200m
+  #    memory: 512Mi
+tool:
+  git:
+    installations:
+    - home: "/usr/local/bin/git"
+      name: "Default"
+  maven:
+    installations:
+    - name: "Maven 3"
+      properties:
+      - installSource:
+          installers:
+            - maven:
+                id: "3.5.4"

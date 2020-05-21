@@ -1,0 +1,13 @@
+#apiVersion: networking.k8s.io/v1beta1
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: spring-petclinic-ingress
+spec:
+  rules:
+  - host: petclinic.<my_public_dns_domain.com>
+    http:
+      paths:
+      - backend:
+          serviceName: spring-petclinic-svc
+          servicePort: 80
