@@ -54,7 +54,7 @@
 - Use [Visual Studio Jenkins JCasC-Plugin](https://marketplace.visualstudio.com/items?itemName=jcasc-developers.jcasc-plugin) This extension is used to integrate a live jenkins instance configuration with your editor. It can be used to edit and validate YAML files.
 
 ## Tips for adding jenkins jobs to JCasC. Use a Seed Job
-- Use 1 file per jenkins job that needs to be configured as source code. Management of pipelines by adding files instead of having 1 single file with all the configurations. Otherwise a single error would break all the pipelines and troubleshooting would be harder.
+- Use 1 file per jenkins job that needs to be configured as source code. Change configuration by adding 1 file per pipeline. Management of pipelines by adding files instead of having 1 single file with all the configurations. Otherwise a single error would break all the pipelines and troubleshooting would be harder.
 - Use a Jenkins Seed Job that loads all the Jenkins Jobs (1 file per jenkins job):
   - This seed job is usually written with JobDSL and can be set up in JCasC YAML or be imported manually as jenkins freestyle job. 
   - Use regular expressions in the seed job to select and filter out all the **Jenkinsfiles and/or JobDSL files** that describe your jenkins jobs (pipelines).
