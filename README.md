@@ -217,7 +217,7 @@ Run **./deploy.sh** script.
 ## Uninstall with uninstall.sh
 Run **./uninstall.sh** script.
 
-## Helm Commands Of Interest
+## Helm Commands of Interest
 
 ```bash
 helm pull codecentric/jenkins --version 1.6.0
